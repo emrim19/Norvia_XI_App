@@ -25,15 +25,13 @@ const handleSubmit = async (e: React.FormEvent) => {
     password: formData.password
   };
 
-  // Use the bridge we created in preload.ts
   const result = await window.electronAPI.registerUser(signupData);
   
   console.log(result);
   if (result.success) {
     console.log("Registration successful!", result.data);
-    navigate('/login'); // Move to login page
+    navigate('/');
   } else {
-    // Show the error to the user (e.g., "Email already in use")
     alert(`Registration failed: ${result.error}`);
   }
 };

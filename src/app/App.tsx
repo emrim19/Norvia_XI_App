@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import FileExplorer from './components/FileExplorer';
-import Sidebar from "./components/Sidebar";
-import Signup from './pages/Signup';
+import Dashboard from './../pages/Dashboard';
+import Login from './../pages/Login';
+import FileExplorer from './../components/FileExplorer';
+import Sidebar from "./../components/Sidebar";
+import Signup from './../pages/Signup';
 
 const App = () => {
   return (
@@ -18,9 +18,9 @@ const App = () => {
         {/* The Router switches content here */}
         <div className="scroll-area">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/fileExplorer" element={<FileExplorer />} />
           </Routes>
         </div>

@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('test@tester.com');
+  const [password, setPassword] = useState('qwerty123');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -15,11 +15,10 @@ const Login = () => {
 
     const result = await window.electronAPI.loginUser({ email, password });
 
-    console.log(result);
-
     if (result.success && result.data) {
+      localStorage.setItem('user', JSON.stringify(result.data.user));
       console.log("Welcome back:", result.data.user.name);
-      navigate('/'); // Send them to the dashboard
+      navigate('/dashboard');
     } else {
       alert(result.error);
     }
