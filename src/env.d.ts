@@ -6,7 +6,7 @@ declare module '*.module.css' {
 
 // 2. Define the API structure once (using the detailed version)
 export interface IElectronAPI {
-  selectFolder: () => Promise<any>;
+  selectFolder: () => Promise<{ path: string; files: FileItem[] } | null>;
   registerUser: (userData: any) => Promise<{ 
     success: boolean; 
     data?: any; 
@@ -26,6 +26,7 @@ export interface IElectronAPI {
       };
       error?: string;
     }>;
+    openCloudAuth: (provider: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 // 3. Inject it into the global Window object

@@ -1,26 +1,39 @@
-import { app, BrowserWindow, ipcMain, dialog} from 'electron';
-import fs from 'fs';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { promises as fs } from 'fs';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import axios from 'axios';
 
+// These are injected by Vite during the build process
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+const API_BASE_URL = isDev 
+  ? 'http://127.0.0.1:5000/api' 
+  : 'https://norviaxi-backend.onrender.com/api';
+
+// Handle creating/removing shortcuts on Windows during installation/uninstallation.
 if (started) {
   app.quit();
 }
 
+//==========================================//
+// * WINDOW MANAGEMENT *
+//==========================================//
+
+// Standard Electron boilerplate to spin up the Chromium window.
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1100,
     height: 700,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      // Connects the 'bridge' file so the frontend can talk to this file.
+      preload: path.join(__dirname, 'preload.js'), 
     },
   });
 
-  // and load the index.html of the app.
+  // If we are in dev mode, load from the Vite server. If production, load the built HTML.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
@@ -29,12 +42,16 @@ const createWindow = () => {
     );
   }
 
-  // Open the DevTools.
+  // Opens Chrome DevTools automatically—great for debugging Norvia XI's UI.
   mainWindow.webContents.openDevTools();
 };
 
+//==========================================//
+// * APP LIFECYCLE *
+//==========================================//
 app.on('ready', createWindow);
 
+// Quit when all windows are closed, except on macOS (standard Mac behavior).
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -48,11 +65,14 @@ app.on('activate', () => {
 });
 
 
+//==========================================//
+// * 3. IPC HANDLERS (The "Backend" Logic) *
+//==========================================//
 
-
+// LIBRARIAN FEATURE: Let's user pick a folder and scans it.
 ipcMain.handle('select-folder', async () => {
   const result = await dialog.showOpenDialog({
-    properties: ['openDirectory'], // Allows picking folders
+    properties: ['openDirectory'],
     title: 'Select a folder to scan',
     buttonLabel: 'Select Folder',
   });
@@ -60,29 +80,44 @@ ipcMain.handle('select-folder', async () => {
   if (result.canceled) return null;
 
   const folderPath = result.filePaths[0];
-  const items = fs.readdirSync(folderPath);
-  
-  const files = items.map(name => {
-    try {
-      const stats = fs.statSync(path.join(folderPath, name));
-      return { name, isDirectory: stats.isDirectory(), size: stats.size };
-    } catch {
-      return { name, isDirectory: false, size: 0 };
-    }
-  });
 
-  return { path: folderPath, files };
+  try {
+    // 1. Asynchronously read the directory names
+    const items = await fs.readdir(folderPath);
+    
+    // 2. Map items to promises for their stats
+    const filePromises = items.map(async (name) => {
+      try {
+        const itemPath = path.join(folderPath, name);
+        const stats = await fs.stat(itemPath); // Asynchronous stat
+        
+        return { 
+          name, 
+          isDirectory: stats.isDirectory(), 
+          size: stats.size 
+        };
+      } catch (err) {
+        // Handle individual file errors (e.g. permission issues)
+        return { name, isDirectory: false, size: 0, error: true };
+      }
+    });
+
+    // 3. Wait for all file stats to resolve in parallel
+    const files = await Promise.all(filePromises);
+
+    return { path: folderPath, files };
+  } catch (error) {
+    console.error("Failed to scan directory:", error);
+    throw error; // Let the renderer handle the error
+  }
 });
 
+// AUTH FEATURE: Proxying registration to your Express/Supabase backend.
 ipcMain.handle('auth-register', async (event, userData) => {
   try {
-    // This hits your Node.js server endpoint we just created
-    const response = await axios.post('http://127.0.0.1:5000/api/users/register', userData);
-    
-    // Return the successful user data back to React
+    const response = await axios.post(`${API_BASE_URL}/users/register`, userData);
     return { success: true, data: response.data };
   } catch (error: any) {
-    // If the server returns an error (like "Email already exists")
     return { 
       success: false, 
       error: error.response?.data?.error || 'Server connection failed' 
@@ -90,18 +125,52 @@ ipcMain.handle('auth-register', async (event, userData) => {
   }
 });
 
+// AUTH FEATURE: Proxying login.
 ipcMain.handle('auth-login', async (event, credentials) => {
   try {
-    const response = await axios.post('http://127.0.0.1:5000/api/users/login', credentials);
+    const response = await axios.post(`${API_BASE_URL}/users/login`, credentials);
     return { success: true, data: response.data };
   } catch (error: any) {
-    console.error("Login Handler Error:", error.message);
     return { 
       success: false, 
-      error: error.response?.data?.error || "Invalid credentials or server down" 
+      error: error.response?.data?.error || "Invalid credentials" 
     };
   }
 });
 
 
+ipcMain.handle('open-auth-window', async (event, provider: string) => {
+  return new Promise((resolve) => {
+    const authWindow = new BrowserWindow({
+      width: 500,
+      height: 650,
+      show: false,
+      alwaysOnTop: true, // Useful for auth popups
+    });
 
+    // 2. Ensure the URL is absolute by checking the prefix
+    const authUrl = `${API_BASE_URL}/auth/${provider}`;
+    
+    // Log this to your terminal! 
+    // If you see "undefined" here, we know API_BASE_URL is the problem.
+    console.log("ELECTRON_MAIN: Loading Auth URL ->", authUrl);
+
+    authWindow.loadURL(authUrl);
+
+    authWindow.once('ready-to-show', () => authWindow.show());
+
+    // 3. The "Spy" logic (Keep this exactly as is)
+    authWindow.webContents.on('will-redirect', (e, url) => {
+  // Check for either google OR teams success paths
+  if (url.includes('/api/auth/google/success') || url.includes('/api/auth/teams/success')) {
+    const params = new URL(url).searchParams;
+    const token = params.get('token');
+    
+    resolve({ success: true, token });
+    authWindow.destroy();
+  }
+});
+
+    authWindow.on('closed', () => resolve({ success: false, error: 'User closed window' }));
+  });
+});
