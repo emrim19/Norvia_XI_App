@@ -26,7 +26,7 @@ export interface IElectronAPI {
       };
       error?: string;
     }>;
-    openCloudAuth: (provider: string) => Promise<{ success: boolean; error?: string }>;
+    openCloudAuth: (provider: string) => Promise<{ success: boolean; token: string; error?: string }>;
 }
 
 // 3. Inject it into the global Window object

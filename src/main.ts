@@ -65,112 +65,117 @@ app.on('activate', () => {
 });
 
 
-//==========================================//
-// * 3. IPC HANDLERS (The "Backend" Logic) *
-//==========================================//
+  //==========================================//
+  // * 3. IPC HANDLERS (The "Backend" Logic) *
+  //==========================================//
 
-// LIBRARIAN FEATURE: Let's user pick a folder and scans it.
-ipcMain.handle('select-folder', async () => {
-  const result = await dialog.showOpenDialog({
-    properties: ['openDirectory'],
-    title: 'Select a folder to scan',
-    buttonLabel: 'Select Folder',
-  });
-
-  if (result.canceled) return null;
-
-  const folderPath = result.filePaths[0];
-
-  try {
-    // 1. Asynchronously read the directory names
-    const items = await fs.readdir(folderPath);
-    
-    // 2. Map items to promises for their stats
-    const filePromises = items.map(async (name) => {
-      try {
-        const itemPath = path.join(folderPath, name);
-        const stats = await fs.stat(itemPath); // Asynchronous stat
-        
-        return { 
-          name, 
-          isDirectory: stats.isDirectory(), 
-          size: stats.size 
-        };
-      } catch (err) {
-        // Handle individual file errors (e.g. permission issues)
-        return { name, isDirectory: false, size: 0, error: true };
-      }
+  // LIBRARIAN FEATURE: Let's user pick a folder and scans it.
+  ipcMain.handle('select-folder', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory'],
+      title: 'Select a folder to scan',
+      buttonLabel: 'Select Folder',
     });
 
-    // 3. Wait for all file stats to resolve in parallel
-    const files = await Promise.all(filePromises);
+    if (result.canceled) return null;
 
-    return { path: folderPath, files };
-  } catch (error) {
-    console.error("Failed to scan directory:", error);
-    throw error; // Let the renderer handle the error
-  }
-});
+    const folderPath = result.filePaths[0];
 
-// AUTH FEATURE: Proxying registration to your Express/Supabase backend.
-ipcMain.handle('auth-register', async (event, userData) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/users/register`, userData);
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { 
-      success: false, 
-      error: error.response?.data?.error || 'Server connection failed' 
-    };
-  }
-});
+    try {
+      // 1. Asynchronously read the directory names
+      const items = await fs.readdir(folderPath);
+      
+      // 2. Map items to promises for their stats
+      const filePromises = items.map(async (name) => {
+        try {
+          const itemPath = path.join(folderPath, name);
+          const stats = await fs.stat(itemPath); // Asynchronous stat
+          
+          return { 
+            name, 
+            isDirectory: stats.isDirectory(), 
+            size: stats.size 
+          };
+        } catch (err) {
+          // Handle individual file errors (e.g. permission issues)
+          return { name, isDirectory: false, size: 0, error: true };
+        }
+      });
 
-// AUTH FEATURE: Proxying login.
-ipcMain.handle('auth-login', async (event, credentials) => {
-  try {
-    const response = await axios.post(`${API_BASE_URL}/users/login`, credentials);
-    return { success: true, data: response.data };
-  } catch (error: any) {
-    return { 
-      success: false, 
-      error: error.response?.data?.error || "Invalid credentials" 
-    };
-  }
-});
+      // 3. Wait for all file stats to resolve in parallel
+      const files = await Promise.all(filePromises);
 
-
-ipcMain.handle('open-auth-window', async (event, provider: string) => {
-  return new Promise((resolve) => {
-    const authWindow = new BrowserWindow({
-      width: 500,
-      height: 650,
-      show: false,
-      alwaysOnTop: true, // Useful for auth popups
-    });
-
-    // 2. Ensure the URL is absolute by checking the prefix
-    const authUrl = `${API_BASE_URL}/auth/${provider}`;
-    
-    // Log this to your terminal! 
-    // If you see "undefined" here, we know API_BASE_URL is the problem.
-    console.log("ELECTRON_MAIN: Loading Auth URL ->", authUrl);
-
-    authWindow.loadURL(authUrl);
-
-    authWindow.once('ready-to-show', () => authWindow.show());
-
-    // 3. The "Spy" logic (Keep this exactly as is)
-    authWindow.webContents.on('will-redirect', (e, url) => {
-  // Check for either google OR teams success paths
-  if (url.includes('/api/auth/google/success') || url.includes('/api/auth/teams/success')) {
-    const params = new URL(url).searchParams;
-    const token = params.get('token');
-    
-    resolve({ success: true, token });
-    authWindow.destroy();
-  }
-});
-
-    authWindow.on('closed', () => resolve({ success: false, error: 'User closed window' }));
+      return { path: folderPath, files };
+    } catch (error) {
+      console.error("Failed to scan directory:", error);
+      throw error; // Let the renderer handle the error
+    }
   });
-});
+
+  // AUTH FEATURE: Proxying registration to your Express/Supabase backend.
+  ipcMain.handle('auth-register', async (event, userData) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/users/register`, userData);
+      return { success: true, data: response.data };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.error || 'Server connection failed' 
+      };
+    }
+  });
+
+  // AUTH FEATURE: Proxying login.
+  ipcMain.handle('auth-login', async (event, credentials) => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/users/login`, credentials);
+      return { success: true, data: response.data };
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.response?.data?.error || "Invalid credentials" 
+      };
+    }
+  });
+
+
+  ipcMain.handle('open-auth-window', async (event, providerQuery: string) => {
+    return new Promise((resolve) => {
+      const providerName = providerQuery.split('?')[0];
+
+      const authWindow = new BrowserWindow({
+        width: 500,
+        height: 650,
+        show: false,
+        alwaysOnTop: true,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+        }
+      });
+
+      const authUrl = `${API_BASE_URL}/auth/${providerQuery}`;
+      authWindow.loadURL(authUrl);
+
+      authWindow.once('ready-to-show', () => authWindow.show());
+
+      // This event fires every time a page is fully loaded
+      authWindow.webContents.on('did-finish-load', () => {
+        const currentURL = authWindow.webContents.getURL();
+
+        // Check if we hit the success landing strip
+        if (currentURL.includes(`/api/auth/${providerName}/success`)) {
+          resolve({ success: true });
+          
+          // Clean up
+          if (!authWindow.isDestroyed()) {
+            authWindow.destroy();
+          }
+        }
+      });
+
+      authWindow.on('closed', () => {
+        resolve({ success: false, error: 'User closed window' });
+      });
+    });
+  });

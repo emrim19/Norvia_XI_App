@@ -16,8 +16,9 @@
     "paths": {
       "*": ["src/*"] // Add this
     },
-    "types": ["node"],
-    "plugins": [{ "name": "typescript-plugin-css-modules" }]
+    "types": ["vite/client", "node"],
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
+    
   },
   "include": ["src", "env.d.ts"] // Simplify this to just "src"
 }

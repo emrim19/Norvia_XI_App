@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getUserId } from '../hooks/useUser'
 // @ts-ignore
 import styles from './FileExplorer.module.css';
 
@@ -10,7 +11,7 @@ interface FileItem {
 
 const SOURCES = [
   { id: 'local', name: 'Local Files', icon: '💻' },
-  { id: 'google', name: 'Google Drive', icon: '🤖' }, // Use actual icons later
+  { id: 'google', name: 'Google Drive', icon: '🤖' },
   { id: 'teams', name: 'MS Teams', icon: '👥' },
   { id: 'slack', name: 'Slack', icon: '💬' },
 ];
@@ -32,23 +33,65 @@ const FileExplorer = () => {
     }
   };
 
-  const handleCloudConnect = async (sourceId: string) => {
+const handleCloudConnect = async (sourceId: string) => {
   setActiveSource(sourceId);
   if (sourceId === 'local') return;
 
+  // 1. Ensure we have the current user's ID from your Norvia XI session
+  // 1. Grab the user string from storage
+  const userId = getUserId();
+  if (!userId) return;
+
+  if (!userId) {
+    console.error("You must be logged in to Norvia XI to connect cloud services.");
+    return;
+  }
+
   setLoading(true);
+    try {
+      // 2. Pass the provider AND the userId to the bridge.
+      // This tells the backend: "Hey, connect Google to User #123"
+      const result = await window.electronAPI.openCloudAuth(`${sourceId}?userId=${userId}`);
+
+      if (result.success) {
+        // 3. The token returned here is your AppToken (internal session)
+        // You can store it or just use it to trigger a UI refresh.
+        console.log(`Successfully linked ${sourceId} to your Norvia XI account!`);
+        await fetchDriveFiles();
+        
+        // OPTIONAL: Fetch the updated connection list from your DB here
+        // fetchUserConnections(); 
+      } else {
+        console.error(`${sourceId} connection failed:`, result.error);
+        // Show a toast or notification to the user here
+      }
+    } catch (err) {
+      console.error("The auth window crashed or was blocked:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+ const fetchDriveFiles = async () => {
   try {
-    const result = await window.electronAPI.openCloudAuth(sourceId);
-    if (result.success) {
-      // Refresh the view or show a "Connected" status
-      console.log(`WOW: ${sourceId} connected successfully!`);
+    const userId = getUserId();
+    if (!userId) return;
+
+    // Use the dynamic API_BASE_URL we set up earlier!
+    const baseUrl = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${baseUrl}/api/auth/google/files?userId=${userId}`);
+    
+    if (response.ok) {
+      const files = await response.json();
+      console.log("Librarian found these files:", files);
+      
+      // Wrap the array in an object so your .map logic doesn't break
+      setData({ path: 'Google Drive / My Files', files: files });
     } else {
-      console.error(result.error);
+      console.error("Server responded with error:", response.status);
     }
   } catch (err) {
-    console.error("Auth window failed", err);
-  } finally {
-    setLoading(false);
+    console.error("Failed to sync files:", err);
   }
 };
 
