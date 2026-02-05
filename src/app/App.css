@@ -1,4 +1,3 @@
-/* src/App.css */
 :root {
   --bg-main: #0f172a;
   --bg-sidebar: #020617;
@@ -44,5 +43,9 @@
   overflow-y: auto;
   padding: 2.5rem;
   /* Recreating that radial gradient in CSS */
-  background: radial-gradient(circle at top right, rgba(30, 41, 59, 0.2), var(--bg-main));
+  background: radial-gradient(
+    circle at top right,
+    rgba(30, 41, 59, 0.2),
+    var(--bg-main)
+  );
 }

@@ -1,18 +1,35 @@
-// @ts-ignore
-import styles from './Dashboard.module.css';
+import styles from "./Dashboard.module.css";
 
 interface Activity {
   id: number;
   user: string;
   action: string;
   date: string;
-  status: 'Completed' | 'Pending' | 'Failed';
+  status: "Completed" | "Pending" | "Failed";
 }
 
 const activities: Activity[] = [
-  { id: 1, user: 'Project Alpha', action: 'Build Successful', date: '2 mins ago', status: 'Completed' },
-  { id: 2, user: 'Project Beta', action: 'Deployment', date: '1 hour ago', status: 'Pending' },
-  { id: 3, user: 'Legacy Tool', action: 'Security Patch', date: 'Yesterday', status: 'Failed' },
+  {
+    id: 1,
+    user: "Project Alpha",
+    action: "Build Successful",
+    date: "2 mins ago",
+    status: "Completed",
+  },
+  {
+    id: 2,
+    user: "Project Beta",
+    action: "Deployment",
+    date: "1 hour ago",
+    status: "Pending",
+  },
+  {
+    id: 3,
+    user: "Legacy Tool",
+    action: "Security Patch",
+    date: "Yesterday",
+    status: "Failed",
+  },
 ];
 
 const Dashboard = () => {
@@ -25,13 +42,15 @@ const Dashboard = () => {
 
       <section className={styles.statsGrid}>
         {[
-          { label: 'Active Projects', value: '12', color: '#3b82f6' },
-          { label: 'Uptime', value: '99.9%', color: '#10b981' },
-          { label: 'System Load', value: '24%', color: '#f59e0b' },
+          { label: "Active Projects", value: "12", color: "#3b82f6" },
+          { label: "Uptime", value: "99.9%", color: "#10b981" },
+          { label: "System Load", value: "24%", color: "#f59e0b" },
         ].map((stat, i) => (
           <div key={i} className={styles.statCard}>
             <p className={styles.statLabel}>{stat.label}</p>
-            <p className={styles.statValue} style={{ color: stat.color }}>{stat.value}</p>
+            <p className={styles.statValue} style={{ color: stat.color }}>
+              {stat.value}
+            </p>
           </div>
         ))}
       </section>
@@ -39,7 +58,14 @@ const Dashboard = () => {
       <section className={styles.tableContainer}>
         <div className={styles.tableHeader}>
           <h2>Recent Activity</h2>
-          <button style={{ color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button
+            style={{
+              color: "#60a5fa",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
             View All
           </button>
         </div>
@@ -55,11 +81,13 @@ const Dashboard = () => {
           <tbody>
             {activities.map((item) => (
               <tr key={item.id} className={styles.row}>
-                <td style={{ color: 'white', fontWeight: 500 }}>{item.user}</td>
+                <td style={{ color: "white", fontWeight: 500 }}>{item.user}</td>
                 <td>{item.action}</td>
-                <td style={{ fontSize: '0.875rem' }}>{item.date}</td>
+                <td style={{ fontSize: "0.875rem" }}>{item.date}</td>
                 <td>
-                  <span className={`${styles.badge} ${styles[item.status.toLowerCase()]}`}>
+                  <span
+                    className={`${styles.badge} ${styles[item.status.toLowerCase()]}`}
+                  >
                     {item.status}
                   </span>
                 </td>

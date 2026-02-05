@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-// @ts-ignore
-import styles from './Login.module.css';
+import styles from "./Login.module.css";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState('test@tester.com');
-  const [password, setPassword] = useState('qwerty123');
+  const [email, setEmail] = useState("test@tester.com");
+  const [password, setPassword] = useState("qwerty123");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -16,9 +15,9 @@ const Login = () => {
     const result = await window.electronAPI.loginUser({ email, password });
 
     if (result.success && result.data) {
-      localStorage.setItem('user', JSON.stringify(result.data.user));
+      localStorage.setItem("user", JSON.stringify(result.data.user));
       console.log("Welcome back:", result.data.user.name);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } else {
       alert(result.error);
     }
@@ -34,8 +33,8 @@ const Login = () => {
         <form onSubmit={handleLogin}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Access Key / Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               className={styles.input}
               placeholder="operator@norvia.io"
               value={email}
@@ -46,8 +45,8 @@ const Login = () => {
 
           <div className={styles.formGroup}>
             <label className={styles.label}>Authorization Token</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               className={styles.input}
               placeholder="••••••••"
               value={password}
@@ -56,12 +55,12 @@ const Login = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles.loginButton}
             disabled={isLoading}
           >
-            {isLoading ? 'Authenticating...' : 'Initialize Session'}
+            {isLoading ? "Authenticating..." : "Initialize Session"}
           </button>
         </form>
 
