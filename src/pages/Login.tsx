@@ -1,10 +1,10 @@
-import styles from "./Login.module.css";
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import styles from './Login.module.css';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [email, setEmail] = useState("test@tester.com");
-  const [password, setPassword] = useState("qwerty123");
+  const [email, setEmail] = useState('test@tester.com');
+  const [password, setPassword] = useState('qwerty123');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -15,9 +15,9 @@ const Login = () => {
     const result = await window.electronAPI.loginUser({ email, password });
 
     if (result.success && result.data) {
-      localStorage.setItem("user", JSON.stringify(result.data.user));
-      console.log("Welcome back:", result.data.user.name);
-      navigate("/dashboard");
+      localStorage.setItem('user', JSON.stringify(result.data.user));
+      console.log('Welcome back:', result.data.user.name);
+      navigate('/fileExplorer');
     } else {
       alert(result.error);
     }
@@ -60,7 +60,7 @@ const Login = () => {
             className={styles.loginButton}
             disabled={isLoading}
           >
-            {isLoading ? "Authenticating..." : "Initialize Session"}
+            {isLoading ? 'Authenticating...' : 'Initialize Session'}
           </button>
         </form>
 

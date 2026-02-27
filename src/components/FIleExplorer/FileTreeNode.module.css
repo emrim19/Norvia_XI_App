@@ -1,0 +1,40 @@
+/* FileTreeNode.module.css */
+
+.fileTreeContainer {
+  list-style-type: none;
+  margin: 0;
+  /* Indentation is handled by paddingLeft in the component */
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  user-select: none; /* Prevents text selection while clicking */
+}
+
+.fileItem:hover {
+  background-color: #f0f0f0; /* Light gray hover effect */
+}
+
+.icon {
+  margin-right: 8px;
+  font-size: 1.1rem;
+  width: 20px; /* Ensures icons align vertically */
+  text-align: center;
+}
+
+.fileName {
+  font-size: 0.95rem;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Optional: Different styling for folders vs files */
+.folderItem {
+  font-weight: 500;
+}

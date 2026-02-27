@@ -1,8 +1,11 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import { promises as fs } from "fs";
+import os from "os";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import axios from "axios";
+import { exec } from "child_process";
+import util from "util";
 
 // These are injected by Vite during the build process
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
@@ -16,6 +19,14 @@ const API_BASE_URL = isDev
 // Handle creating/removing shortcuts on Windows during installation/uninstallation.
 if (started) {
   app.quit();
+}
+
+// Define the shape of our file data for type safety
+interface FileItem {
+  name: string;
+  path: string; // Add full path for navigation
+  isDirectory: boolean;
+  size: number;
 }
 
 //==========================================//
@@ -72,42 +83,69 @@ app.on("activate", () => {
 ipcMain.handle("select-folder", async () => {
   const result = await dialog.showOpenDialog({
     properties: ["openDirectory"],
-    title: "Select a folder to scan",
+    title: "Select Root Folder",
     buttonLabel: "Select Folder",
   });
 
   if (result.canceled) return null;
-
   const folderPath = result.filePaths[0];
 
+  // Return just the path, we will call get-directory-contents next
+  return folderPath;
+});
+
+// --- handler for navigating inside ---
+ipcMain.handle("get-directory-contents", async (event, targetPath?: string) => {
   try {
-    // 1. Asynchronously read the directory names
-    const items = await fs.readdir(folderPath);
+    // 1. Determine the path to read (default to home directory)
+    let dirToRead = targetPath || os.homedir();
 
-    // 2. Map items to promises for their stats
+    // 2. Fix for Windows drive letters: ensure they end with a backslash
+    if (
+      process.platform === "win32" &&
+      dirToRead.length === 2 &&
+      dirToRead.endsWith(":")
+    ) {
+      dirToRead += path.sep;
+    }
+
+    console.log("Reading directory:", dirToRead); // Debugging
+
+    const items = await fs.readdir(dirToRead);
+
     const filePromises = items.map(async (name) => {
+      // 3. Use path.resolve to ensure we have an absolute path
+      const itemPath = path.resolve(dirToRead, name);
       try {
-        const itemPath = path.join(folderPath, name);
-        const stats = await fs.stat(itemPath); // Asynchronous stat
-
+        const stats = await fs.stat(itemPath);
         return {
           name,
+          path: itemPath,
           isDirectory: stats.isDirectory(),
           size: stats.size,
         };
       } catch (err) {
-        // Handle individual file errors (e.g. permission issues)
-        return { name, isDirectory: false, size: 0, error: true };
+        return {
+          name,
+          path: itemPath,
+          isDirectory: false,
+          size: 0,
+          error: true,
+        };
       }
     });
 
-    // 3. Wait for all file stats to resolve in parallel
     const files = await Promise.all(filePromises);
 
-    return { path: folderPath, files };
+    files.sort((a, b) => {
+      if (a.isDirectory === b.isDirectory) return a.name.localeCompare(b.name);
+      return a.isDirectory ? -1 : 1;
+    });
+
+    return { path: dirToRead, files };
   } catch (error) {
-    console.error("Failed to scan directory:", error);
-    throw error; // Let the renderer handle the error
+    console.error("Failed to read directory:", error);
+    throw error;
   }
 });
 

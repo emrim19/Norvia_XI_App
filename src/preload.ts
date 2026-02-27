@@ -1,8 +1,13 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer } from "electron";
 
-contextBridge.exposeInMainWorld('electronAPI', {
-  selectFolder: () => ipcRenderer.invoke('select-folder'),
-  registerUser: (userData: any) => ipcRenderer.invoke('auth-register', userData),
-  loginUser: (credentials: any) => ipcRenderer.invoke('auth-login', credentials),
-  openCloudAuth: (provider: string) => ipcRenderer.invoke('open-auth-window', provider),
+contextBridge.exposeInMainWorld("electronAPI", {
+  selectFolder: () => ipcRenderer.invoke("select-folder"),
+  registerUser: (userData: any) =>
+    ipcRenderer.invoke("auth-register", userData),
+  loginUser: (credentials: any) =>
+    ipcRenderer.invoke("auth-login", credentials),
+  openCloudAuth: (provider: string) =>
+    ipcRenderer.invoke("open-auth-window", provider),
+  getDirectoryContents: (path?: string) =>
+    ipcRenderer.invoke("get-directory-contents", path),
 });

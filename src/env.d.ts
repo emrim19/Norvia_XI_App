@@ -1,32 +1,37 @@
 // 1. Define the CSS Module structure once
-declare module '*.module.css' {
+declare module "*.module.css" {
   const classes: { [key: string]: string };
   export default classes;
 }
 
 // 2. Define the API structure once (using the detailed version)
 export interface IElectronAPI {
-  selectFolder: () => Promise<{ path: string; files: FileItem[] } | null>;
-  registerUser: (userData: any) => Promise<{ 
-    success: boolean; 
-    data?: any; 
-    error?: string 
+  selectFolder: () => Promise<string | null>;
+  registerUser: (userData: any) => Promise<{
+    success: boolean;
+    data?: any;
+    error?: string;
   }>;
   loginUser: (credentials: { email: string; password: string }) => Promise<{
-      success: boolean;
-      data?: {
-        message: string;
-        user: {
-          id: string;
-          name: string;
-          email: string;
-          created_at: string;
-          last_login_at: string;
-        };
+    success: boolean;
+    data?: {
+      message: string;
+      user: {
+        id: string;
+        name: string;
+        email: string;
+        created_at: string;
+        last_login_at: string;
       };
-      error?: string;
-    }>;
-    openCloudAuth: (provider: string) => Promise<{ success: boolean; token: string; error?: string }>;
+    };
+    error?: string;
+  }>;
+  openCloudAuth: (
+    provider: string,
+  ) => Promise<{ success: boolean; token: string; error?: string }>;
+  getDirectoryContents: (
+    path?: string,
+  ) => Promise<{ path: string; files: any[] }>;
 }
 
 // 3. Inject it into the global Window object

@@ -1,34 +1,212 @@
+/* FileExplorer.module.css */
+
+.dashboardContainer {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+.title {
+  margin-top: 0;
+  color: #333;
+}
+
+.resultsWrapper {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+  background-color: white;
+}
+
+/* --- Breadcrumb Bar Styles --- */
+.breadcrumbBar {
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.9rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  color: #555;
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumbPart {
+  cursor: pointer;
+  color: #0078d4;
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumbPart:hover {
+  text-decoration: underline;
+}
+
+.separator {
+  color: #999;
+  margin: 0 6px;
+  cursor: default;
+}
+
+/* --- File List Styles --- */
+.fileListContainer {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.fileList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+}
+
+.fileItem:hover {
+  background-color: #f0f7ff;
+}
+
+.icon {
+  margin-right: 12px;
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.fileName {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #333;
+}
+
+.fileSize {
+  font-size: 0.8rem;
+  color: #888;
+  margin-left: 10px;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* --- Connector Grid Styles (Left in case you need them) --- */
 .connectorGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 16px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
 }
 
 .connectorCard {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 10px;
-  padding: 16px;
-  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.2s;
 }
 
 .connectorCard:hover {
-  border-color: #3b82f6;
-  background: #273549;
-  transform: translateY(-2px);
+  border-color: #0078d4;
+  background-color: #f0f7ff;
+}
+
+.activeCard {
+  border-color: #0078d4;
+  background-color: #e5f1fb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .connectorIcon {
   font-size: 2rem;
-  margin-bottom: 8px;
-  display: block;
+  margin-bottom: 5px;
 }
 
 .connectorName {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: #e2e8f0;
+  color: #333;
+}
+
+/* Add or update these inside FileExplorer.module.css */
+
+.fileList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  /* Add padding to the container for a tree look */
+  padding-left: 10px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+  /* Add subtle indentation to all items */
+  margin-left: 5px;
+  border-radius: 4px;
+}
+
+.fileItem:hover {
+  background-color: #f0f7ff;
+}
+
+.icon {
+  margin-right: 12px;
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+  /* Color icons differently for folders vs files */
+  color: #555;
+}
+
+/* Optional: Make folders distinct */
+.icon:has(📁) {
+  color: #f4b400; /* Yellow for folders */
+}
+
+.resultsWrapper {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.fileItem {
+  padding: 5px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.fileItem:hover {
+  background-color: #f0f0f0;
+}
+
+.icon {
+  margin-right: 8px;
+}
+
+.fileName {
+  font-family: sans-serif;
 }

@@ -1,10 +1,21 @@
-export const fetchLocalFiles = async () => {
+// 1. Define the handler function that calls the Electron bridge
+export const getDirectoryContents = async (dirPath: string) => {
   try {
-    const result = await window.electronAPI.selectFolder();
-    if (result) {
-      return result;
-    }
+    const result = await window.electronAPI.getDirectoryContents(dirPath);
+    return result;
   } catch (error) {
-    console.error("Scan error:", error);
+    console.error('Error fetching directory contents:', error);
+    throw error;
+  }
+};
+
+// 2. Define the handler function that opens the folder dialog
+export const selectFolder = async () => {
+  try {
+    const folderPath = await window.electronAPI.selectFolder();
+    return folderPath;
+  } catch (error) {
+    console.error('Error selecting folder:', error);
+    throw error;
   }
 };
