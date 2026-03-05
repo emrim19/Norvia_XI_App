@@ -1,21 +1,19 @@
 import styles from './FileExplorer.module.css';
-import FileTreeNode from '../components/FIleExplorer/FileTreeNode';
-import { FileItem } from '../types/FIleItem';
+import FileTreeNode from '../components/FileExplorer/FileTreeNode';
+import { FileItem } from '../../types/FileItem'
 import { useState } from 'react';
 import { getUserId } from '../hooks/useUser';
-import { fetchGoogleDriveFiles } from '../services/cloudAccess';
-import { getDirectoryContents } from '../services/localFileAccess';
+import { fetchGoogleDriveFiles } from '../../services/cloudAccess';
+import { getDirectoryContents } from '../../services/localFileAccess';
 
 const SOURCES = [
-  { id: 'local', name: 'Local Files', icon: '💻' },
-  { id: 'google', name: 'Google Drive', icon: '🤖' },
-  { id: 'teams', name: 'MS Teams', icon: '👥' },
-  { id: 'slack', name: 'Slack', icon: '💬' },
+  { id: 'local', name: 'Local Files', icon: '💻' }
 ];
 
 const FileExplorer = () => {
   const [activeSource, setActiveSource] = useState('local');
   const [treeData, setTreeData] = useState<FileItem[]>([]);
+
 
   const updateNodeInTree = (
     nodes: FileItem[],

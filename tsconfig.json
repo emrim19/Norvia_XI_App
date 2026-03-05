@@ -20,5 +20,5 @@
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
     
   },
-  "include": ["src", "env.d.ts"] // Simplify this to just "src"
+  "include": ["src", "env.d.ts", "src/preload", "main.old.ts"] // Simplify this to just "src"
 }

@@ -1,4 +1,4 @@
-import { getUserId } from '../hooks/useUser';
+import { getUserId } from '../renderer/hooks/useUser';
 
 export const fetchGoogleDriveFiles = async () => {
   try {

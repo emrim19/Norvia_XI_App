@@ -49,5 +49,49 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.13.0"
+  },
+"config": {
+    "forge": {
+      "packagerConfig": {
+        "asar": true
+      },
+      "plugins": [
+        {
+          "name": "@electron-forge/plugin-vite",
+          "config": {
+            "build": [
+              {
+                "entry": "src/main/main.ts", 
+                "config": "vite.main.config.ts"
+              },
+              {
+                "entry": "src/preload/index.ts", 
+                "config": "vite.preload.config.ts"
+              }
+            ],
+            "renderer": [
+              {
+                "name": "main_window",
+                "config": "vite.renderer.config.ts"
+              }
+            ]
+          }
+        },
+        {
+          "name": "@electron-forge/plugin-fuses",
+          "config": {
+            "version": "1.8.0",
+            "fuses": {
+              "RunAsNode": false,
+              "EnableCookieEncryption": true,
+              "EnableNodeOptionsEnvironmentVariable": false,
+              "EnableNodeCliInspectArguments": false,
+              "EnableEmbeddedAsarIntegrityValidation": true,
+              "OnlyLoadAppFromAsar": true
+            }
+          }
+        }
+      ]
+    }
   }
 }

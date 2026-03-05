@@ -44,6 +44,12 @@ const Sidebar = () => {
         >
           File Explorer
         </button>
+        <button
+          className={getBtnClass("/test")}
+          onClick={() => navigate("/test")}
+        >
+          Test
+        </button>
         <div className={styles.userProfile}>
           <span className={styles.userName}>Logged in as: {userName}</span>
         </div>

@@ -1,4 +1,4 @@
-// 1. Define the handler function that calls the Electron bridge
+// Define the handler function that calls the Electron bridge
 export const getDirectoryContents = async (dirPath: string) => {
   try {
     const result = await window.electronAPI.getDirectoryContents(dirPath);
@@ -9,7 +9,7 @@ export const getDirectoryContents = async (dirPath: string) => {
   }
 };
 
-// 2. Define the handler function that opens the folder dialog
+// Define the handler function that opens the folder dialog
 export const selectFolder = async () => {
   try {
     const folderPath = await window.electronAPI.selectFolder();
